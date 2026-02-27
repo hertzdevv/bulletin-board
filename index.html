@@ -3,71 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X Hertz Board - 系统运行正常</title>
+    <title>X Hertz - 社区运行状态</title>
     <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --status-up: #10b981;
+            --status-down: #ef4444;
+            --status-checking: #f59e0b;
+        }
         body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
         .container {
-            background: #fff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px 20px;
+        }
+        .header {
             text-align: center;
-            max-width: 500px;
-            width: 85%;
+            margin-bottom: 50px;
         }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            letter-spacing: 2px;
         }
-        p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin: 0;
+            font-style: italic;
         }
-        .status {
-            display: inline-block;
-            margin-top: 10px;
+        .site-list {
+            display: grid;
+            gap: 20px;
+        }
+        .site-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .site-card:hover {
+            transform: translateY(-2px);
+        }
+        .site-info h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.2rem;
+        }
+        .site-info a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .site-info a:hover {
+            text-decoration: underline;
+        }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             padding: 8px 16px;
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 14px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.05);
         }
-        .domain {
-            font-family: monospace;
-            background: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: #d63031;
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
         }
+        /* 状态颜色 */
+        .up .status-dot { background-color: var(--status-up); box-shadow: 0 0 8px var(--status-up); }
+        .up { color: var(--status-up); }
+        
+        .down .status-dot { background-color: var(--status-down); box-shadow: 0 0 8px var(--status-down); }
+        .down { color: var(--status-down); }
+        
+        .checking .status-dot { background-color: var(--status-checking); }
+        .checking { color: var(--status-checking); }
+
         .footer {
-            margin-top: 30px;
-            font-size: 12px;
-            color: #aaa;
+            text-align: center;
+            margin-top: 50px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>X Hertz Board</h1>
-        <p>恭喜！当你看到这个页面时，说明网页已成功托管至 GitHub Pages。</p>
-        <p>自定义域名 <span class="domain">board.887290.xyz</span> 的 DNS 解析已完全生效。</p>
-        <div class="status">● 服务在线</div>
-        
+        <div class="header">
+            <h1>X Hertz</h1>
+            <p>Explore the unknown frequency</p>
+        </div>
+
+        <div class="site-list" id="site-list">
+            </div>
+
         <div class="footer">
+            最后更新: <span id="last-update">检查中...</span><br><br>
             Powered by GitHub Pages & Cloudflare
         </div>
     </div>
+
+    <script>
+        // 配置你的社区站点
+        const sites = [
+            { id: 'hub', name: '社区主 Hub', url: 'https://hub.xhz.app' },
+            { id: 'main', name: 'X Hertz 主站', url: 'https://onehz.cc' }
+        ];
+
+        const siteListEl = document.getElementById('site-list');
+        const lastUpdateEl = document.getElementById('last-update');
+
+        // 初始化渲染页面
+        function renderSites() {
+            siteListEl.innerHTML = '';
+            sites.forEach(site => {
+                const card = document.createElement('div');
+                card.className = 'site-card';
+                card.innerHTML = `
+                    <div class="site-info">
+                        <h2>${site.name}</h2>
+                        <a href="${site.url}" target="_blank">${site.url.replace('https://', '')}</a>
+                    </div>
+                    <div class="status-badge checking" id="status-${site.id}">
+                        <div class="status-dot"></div>
+                        <span class="status-text">检测中...</span>
+                    </div>
+                `;
+                siteListEl.appendChild(card);
+            });
+        }
+
+        // 模拟状态检查逻辑 (纯前端跨域请求往往会被浏览器拦截，这里先做UI演示)
+        // 稍后可以接入真实的监控 API
+        function checkStatus() {
+            const now = new Date();
+            lastUpdateEl.textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
+
+            sites.forEach(site => {
+                const badge = document.getElementById(`status-${site.id}`);
+                const text = badge.querySelector('.status-text');
+                
+                // 这里用 setTimeout 模拟网络请求延迟
+                setTimeout(() => {
+                    // 默认显示运行正常
+                    badge.className = 'status-badge up';
+                    text.textContent = '运行正常';
+                }, 800 + Math.random() * 1000);
+            });
+        }
+
+        // 页面加载时执行
+        renderSites();
+        checkStatus();
+
+        // 设置每 60 秒自动刷新一次 UI 状态
+        setInterval(checkStatus, 60000);
+    </script>
 </body>
 </html>
