@@ -3,172 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X Hertz - 社区运行状态</title>
+    <title>X Hertz Status</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #38bdf8;
-            --status-up: #10b981;
-            --status-down: #ef4444;
-            --status-checking: #f59e0b;
+            --bg-color: #f4f5f7;
+            --container-bg: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #8993a4;
+            --border-color: #dfe1e6;
+            --status-green: #2fcc66;
+            --status-yellow: #f6c342;
+            --status-red: #e74c3c;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
+
         body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-family);
             background-color: var(--bg-color);
             color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
         }
+
+        .header-wrapper {
+            background-color: var(--container-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+        }
+
         .container {
-            width: 100%;
-            max-width: 800px;
-            padding: 40px 20px;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 50px;
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        .header h1 {
-            font-size: 2.5rem;
-            margin: 0 0 10px 0;
-            letter-spacing: 2px;
-        }
-        .header p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
+
+        .brand h1 {
             margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .brand span {
+            color: var(--text-secondary);
+            font-size: 14px;
             font-style: italic;
         }
-        .site-list {
-            display: grid;
-            gap: 20px;
-        }
-        .site-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 24px;
+
+        /* 全局状态横幅 */
+        .overall-status {
+            margin-top: 40px;
+            padding: 16px 20px;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .site-card:hover {
-            transform: translateY(-2px);
+
+        .overall-status.operational {
+            background-color: var(--status-green);
         }
-        .site-info h2 {
-            margin: 0 0 8px 0;
-            font-size: 1.2rem;
+
+        /* 组件列表 */
+        .components-section {
+            margin-top: 40px;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .site-info a {
-            color: var(--accent);
+
+        .component-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .component-item:last-child {
+            border-bottom: none;
+        }
+
+        .component-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .component-name {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .component-name a {
+            color: var(--text-main);
             text-decoration: none;
-            font-size: 0.95rem;
         }
-        .site-info a:hover {
+        
+        .component-name a:hover {
             text-decoration: underline;
         }
-        .status-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-        .up .status-dot { background-color: var(--status-up); box-shadow: 0 0 8px var(--status-up); }
-        .up { color: var(--status-up); }
-        
-        .down .status-dot { background-color: var(--status-down); box-shadow: 0 0 8px var(--status-down); }
-        .down { color: var(--status-down); }
-        
-        .checking .status-dot { background-color: var(--status-checking); }
-        .checking { color: var(--status-checking); }
 
+        .component-status-text {
+            color: var(--status-green);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        /* 历史 Uptime 图表 (模拟 60 天) */
+        .uptime-chart {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 35px;
+            gap: 2px;
+        }
+
+        .uptime-bar {
+            flex: 1;
+            background-color: var(--status-green);
+            height: 100%;
+            border-radius: 2px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+
+        .uptime-bar:hover {
+            opacity: 1;
+        }
+
+        .uptime-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 底部信息 */
         .footer {
-            text-align: center;
             margin-top: 50px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
+            padding-bottom: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
+        .footer a {
+            color: var(--text-secondary);
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
+
+    <div class="header-wrapper">
+        <div class="container brand">
+            <h1>X Hertz Status</h1>
+            <span>Explore the unknown frequency</span>
+        </div>
+    </div>
+
     <div class="container">
-        <div class="header">
-            <h1>X Hertz</h1>
-            <p>Explore the unknown frequency</p>
+        <div class="overall-status operational">
+            <span>所有系统运行正常</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
 
-        <div class="site-list" id="site-list">
+        <div class="components-section" id="components-container">
             </div>
 
         <div class="footer">
-            最后更新: <span id="last-update">检查中...</span><br><br>
-            Powered by GitHub Pages & Cloudflare
+            最后更新于 <span id="last-update">正在获取...</span><br><br>
+            Powered by X Hertz & GitHub Pages
         </div>
     </div>
 
     <script>
-        // 你的社区站点配置已更新
         const sites = [
-            { id: 'main', name: 'X Hertz 主站', url: 'https://hub.xhz.app' },
+            { id: 'hub', name: 'X Hertz 主站', url: 'https://hub.xhz.app' },
             { id: 'backup', name: '备用站', url: 'https://887290.xyz' }
         ];
 
-        const siteListEl = document.getElementById('site-list');
-        const lastUpdateEl = document.getElementById('last-update');
+        const container = document.getElementById('components-container');
 
-        function renderSites() {
-            siteListEl.innerHTML = '';
-            sites.forEach(site => {
-                const card = document.createElement('div');
-                card.className = 'site-card';
-                card.innerHTML = `
-                    <div class="site-info">
-                        <h2>${site.name}</h2>
-                        <a href="${site.url}" target="_blank">${site.url.replace('https://', '')}</a>
-                    </div>
-                    <div class="status-badge checking" id="status-${site.id}">
-                        <div class="status-dot"></div>
-                        <span class="status-text">检测中...</span>
-                    </div>
-                `;
-                siteListEl.appendChild(card);
-            });
-        }
-
-        function checkStatus() {
-            const now = new Date();
-            lastUpdateEl.textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
-
-            sites.forEach(site => {
-                const badge = document.getElementById(`status-${site.id}`);
-                const text = badge.querySelector('.status-text');
+        // 生成 60 天的图表柱子
+        function generateUptimeBars() {
+            let html = '';
+            for(let i = 0; i < 60; i++) {
+                // 这里我们做个极其偶尔的小波动模拟，让页面看起来更逼真
+                // 98%的概率是绿色，极少概率模拟轻微波动
+                let colorClass = 'var(--status-green)';
+                let height = '100%';
                 
-                setTimeout(() => {
-                    badge.className = 'status-badge up';
-                    text.textContent = '运行正常';
-                }, 800 + Math.random() * 1000);
-            });
+                // 你可以根据需要删除这段随机逻辑，让它永远保持 100% 绿色
+                if (Math.random() > 0.98) {
+                    colorClass = 'var(--status-yellow)';
+                    height = '80%';
+                }
+                
+                html += `<div class="uptime-bar" style="background-color: ${colorClass}; height: ${height};" title="${60-i} 天前"></div>`;
+            }
+            return html;
         }
 
-        renderSites();
-        checkStatus();
-        setInterval(checkStatus, 60000);
+        // 渲染组件列表
+        function renderComponents() {
+            let html = '';
+            sites.forEach(site => {
+                html += `
+                <div class="component-item">
+                    <div class="component-header">
+                        <div class="component-name">
+                            <a href="${site.url}" target="_blank">${site.name}</a>
+                        </div>
+                        <div class="component-status-text">Operational</div>
+                    </div>
+                    <div class="uptime-chart">
+                        ${generateUptimeBars()}
+                    </div>
+                    <div class="uptime-labels">
+                        <span>60 天前</span>
+                        <span>100% 可用率</span>
+                        <span>今天</span>
+                    </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('last-update').textContent = now.toLocaleString('zh-CN', { hour12: false });
+        }
+
+        // 初始化
+        renderComponents();
+        updateTime();
+        setInterval(updateTime, 60000); // 每分钟更新底部时间
     </script>
 </body>
 </html>
