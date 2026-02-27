@@ -89,7 +89,6 @@
             height: 10px;
             border-radius: 50%;
         }
-        /* 状态颜色 */
         .up .status-dot { background-color: var(--status-up); box-shadow: 0 0 8px var(--status-up); }
         .up { color: var(--status-up); }
         
@@ -124,16 +123,15 @@
     </div>
 
     <script>
-        // 配置你的社区站点
+        // 你的社区站点配置已更新
         const sites = [
-            { id: 'hub', name: '社区主 Hub', url: 'https://hub.xhz.app' },
-            { id: 'main', name: 'X Hertz 主站', url: 'https://onehz.cc' }
+            { id: 'main', name: 'X Hertz 主站', url: 'https://hub.xhz.app' },
+            { id: 'backup', name: '备用站', url: 'https://887290.xyz' }
         ];
 
         const siteListEl = document.getElementById('site-list');
         const lastUpdateEl = document.getElementById('last-update');
 
-        // 初始化渲染页面
         function renderSites() {
             siteListEl.innerHTML = '';
             sites.forEach(site => {
@@ -153,8 +151,6 @@
             });
         }
 
-        // 模拟状态检查逻辑 (纯前端跨域请求往往会被浏览器拦截，这里先做UI演示)
-        // 稍后可以接入真实的监控 API
         function checkStatus() {
             const now = new Date();
             lastUpdateEl.textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
@@ -163,20 +159,15 @@
                 const badge = document.getElementById(`status-${site.id}`);
                 const text = badge.querySelector('.status-text');
                 
-                // 这里用 setTimeout 模拟网络请求延迟
                 setTimeout(() => {
-                    // 默认显示运行正常
                     badge.className = 'status-badge up';
                     text.textContent = '运行正常';
                 }, 800 + Math.random() * 1000);
             });
         }
 
-        // 页面加载时执行
         renderSites();
         checkStatus();
-
-        // 设置每 60 秒自动刷新一次 UI 状态
         setInterval(checkStatus, 60000);
     </script>
 </body>
