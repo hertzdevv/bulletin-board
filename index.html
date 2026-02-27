@@ -3,164 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-HERTZ | SYSTEM TERMINAL</title>
+    <title>X Hertz - Status</title>
     <style>
+        /* 极致简约的纯文本风格 */
         body {
-            background-color: #050505;
-            color: #00ff00;
-            /* 字体优先调用 macOS 终端默认字体，降级使用其他等宽字体 */
-            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace; 
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-        /* CRT 屏幕扫描线特效 */
-        body::after {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
-            pointer-events: none;
-            z-index: 999;
-        }
-        .terminal {
-            width: 100%;
-            max-width: 800px;
-            padding: 20px;
-            box-sizing: border-box;
-            text-shadow: 0 0 5px rgba(0, 255, 0, 0.4);
-        }
-        .ascii-art {
-            white-space: pre;
-            font-size: 14px;
-            line-height: 1.2;
-            margin-bottom: 20px;
-            color: #00ff00;
-        }
-        .line {
-            margin: 6px 0;
-            line-height: 1.5;
+            font-family: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
+            background-color: #ffffff;
+            color: #000000;
+            padding: 40px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
             font-size: 15px;
-            word-wrap: break-word;
         }
-        .prefix { color: #00ff00; font-weight: bold; }
-        .path { color: #3b8eea; font-weight: bold; }
-        .command { color: #ffffff; }
-        .status-ok { color: #00ff00; font-weight: bold; text-shadow: 0 0 8px #00ff00; }
-        .status-err { color: #ff0000; font-weight: bold; text-shadow: 0 0 8px #ff0000; }
-        .blink {
-            animation: blinker 1s linear infinite;
-            display: inline-block;
-            width: 8px;
-            height: 16px;
-            background-color: #00ff00;
-            vertical-align: middle;
-            margin-left: 2px;
+        
+        /* 基础的黑白反色交互 */
+        a { color: #000000; text-decoration: underline; }
+        a:hover { background-color: #000000; color: #ffffff; text-decoration: none; }
+        
+        .header { margin-bottom: 40px; }
+        
+        /* 用虚线作为简单的视觉分隔 */
+        .site-row { 
+            display: flex; 
+            justify-content: space-between; 
+            border-bottom: 1px dashed #cccccc; 
+            padding: 8px 0; 
+            margin-bottom: 12px; 
         }
-        @keyframes blinker { 50% { opacity: 0; } }
-        a { color: #00ff00; text-decoration: none; border-bottom: 1px dashed #00ff00; padding-bottom: 1px; }
-        a:hover { background: #00ff00; color: #000; text-decoration: none; }
+        
+        .footer { 
+            margin-top: 40px; 
+            font-size: 13px; 
+            color: #666666; 
+        }
     </style>
 </head>
 <body>
-    <div class="terminal" id="term-output">
+    <div class="header">
+        <strong>X HERTZ SYSTEM STATUS</strong><br>
+        Explore the unknown frequency.
+        <br><br>
+        ----------------------------------------
+    </div>
+
+    <div id="status-list">
         </div>
 
+    <div class="footer">
+        ----------------------------------------<br>
+        Last check: <span id="time-display"></span>
+    </div>
+
     <script>
-        // X Hertz ASCII 艺术字
-        const asciiLogo = `
- __   __  _    _ ______ _____ _______ ______ 
- \\ \\ / / | |  | |  ____|  __ \\__   __|  ____|
-  \\ V /  | |__| | |__  | |__) | | |  | |__   
-   > <   |  __  |  __| |  _  /  | |  |  __|  
-  / . \\  | |  | | |____| | \\ \\  | |  | |____ 
- /_/ \\_\\ |_|  |_|______|_|  \\_\\ |_|  |______|
-                                             
- :: Explore the unknown frequency ::
-`;
-
+        // 站点配置
         const sites = [
-            { id: 'hub', url: 'hub.xhz.app' },
-            { id: 'backup', url: '887290.xyz' }
+            { name: 'X Hertz 主站', url: 'hub.xhz.app' },
+            { name: '备用站点', url: '887290.xyz' }
         ];
 
-        const terminal = document.getElementById('term-output');
-        
-        // 模拟每次 PING 的虚拟 IP
-        const mockIps = {
-            'hub.xhz.app': '104.21.XX.XX',
-            '887290.xyz': '172.67.XX.XX'
-        };
-
-        // 终端输出脚本序列
-        const linesToRender = [
-            { type: 'text', content: `<div class="ascii-art">${asciiLogo}</div>` },
-            { type: 'cmd', text: 'lucas@onehz:~$ ./check_node_status.sh' },
-            { type: 'text', content: '[*] Initializing X Hertz diagnostic sequence...' },
-            { type: 'text', content: '[*] Establishing secure connection to endpoints...' },
-            { type: 'empty' },
-        ];
-
-        // 异步等待函数
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // 核心渲染逻辑：打字机效果
-        async function runTerminal() {
-            terminal.innerHTML = ''; // 清空终端
+        function renderStatus() {
+            const container = document.getElementById('status-list');
+            container.innerHTML = '';
             
-            // 1. 渲染基础命令行
-            for (const line of linesToRender) {
-                const div = document.createElement('div');
-                div.className = 'line';
+            sites.forEach(site => {
+                const row = document.createElement('div');
+                row.className = 'site-row';
                 
-                if (line.type === 'text') {
-                    div.innerHTML = line.content;
-                } else if (line.type === 'cmd') {
-                    // 定制化的 Shell 提示符
-                    div.innerHTML = `<span class="prefix">lucas@onehz</span>:<span class="path">~</span>$ <span class="command">${line.text.split('$ ')[1]}</span>`;
-                } else if (line.type === 'empty') {
-                    div.innerHTML = '<br>';
-                }
-                
-                terminal.appendChild(div);
-                await sleep(400); // 行与行之间的模拟停顿
-            }
+                // 使用纯文本符号 [ OK ] 表达状态
+                row.innerHTML = `
+                    <span><a href="https://${site.url}" target="_blank">${site.url}</a></span> 
+                    <span>[ OK ]</span>
+                `;
+                container.appendChild(row);
+            });
 
-            // 2. 模拟逐个站点 Ping 检测
-            for (const site of sites) {
-                const checkingDiv = document.createElement('div');
-                checkingDiv.className = 'line';
-                checkingDiv.innerHTML = `[+] PING <a href="https://${site.url}" target="_blank">${site.url}</a> (${mockIps[site.url]}) 56(84) bytes of data... <span class="blink"></span>`;
-                terminal.appendChild(checkingDiv);
-                
-                // 模拟网络请求的随机延迟 (0.6秒 - 1.5秒)
-                await sleep(600 + Math.random() * 900); 
-                
-                // 模拟返回结果
-                const pingTime = (Math.random() * 30 + 10).toFixed(1); // 生成 10-40ms 的随机延迟
-                checkingDiv.innerHTML = `[+] PING <a href="https://${site.url}" target="_blank">${site.url}</a> (${mockIps[site.url]}) ... <span class="status-ok">ONLINE</span> time=${pingTime} ms`;
-            }
-
-            // 3. 渲染结束状态和光标
-            const footerDiv = document.createElement('div');
-            footerDiv.className = 'line';
-            footerDiv.innerHTML = `<br>[*] Diagnostic complete. All frequency bands active.<br><span class="prefix">lucas@onehz</span>:<span class="path">~</span>$ <span class="blink"></span>`;
-            terminal.appendChild(footerDiv);
+            // 更新时间
+            const now = new Date();
+            document.getElementById('time-display').innerText = now.toLocaleString('zh-CN', { hour12: false });
         }
 
-        // 首次运行
-        runTerminal();
-        
-        // 设置每隔 60 秒自动重新执行一次终端检测动画
-        setInterval(() => {
-            runTerminal();
-        }, 60000);
+        // 初始运行并设置定时刷新
+        renderStatus();
+        setInterval(renderStatus, 60000);
     </script>
 </body>
 </html>
